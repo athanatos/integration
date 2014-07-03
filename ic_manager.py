@@ -13,8 +13,8 @@ def main():
         '--target-repo',
         dest='target_repo',
         action='store',
-        help='github repo for which we are constructing an ic branch'
-        require=True)
+        help='github repo for which we are constructing an ic branch',
+        required=True)
     parser.add_argument(
         '--branch-name-base',
         dest='branch_name_base',
@@ -24,7 +24,7 @@ def main():
     parser.add_argument(
         '--working-dir',
         dest='working_dir',
-        action'store',
+        action='store',
         help='location of working dir, must be empty',
-        require=True)
+        required=True)
     return 0
