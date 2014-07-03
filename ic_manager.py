@@ -1,4 +1,33 @@
 import argparse
+from os import path, mkdir
+import git
+
+def github_addr(candidate):
+    parts = candidate.split('/')
+    if len(parts) is not 2:
+        raise argparse.ArgumentTypeError(
+            "{cand} is not a valid github repo".format(
+            cand=candidate))
+    return "https://github.com/{user}/{repo}.git".format(
+        user=parts[0],
+        repo=parts[1])
+
+def get_ic_branch_name(base):
+    return base
+
+def init_repo(tdir, rurl, ic_branch_name, ic_branch_base):
+    tgitpath = path.join(tdir, "target.git")
+    print tgitpath
+    mkdir(tgitpath)
+    repo = git.Repo.init(tgitpath)
+    remote = repo.create_remote('origin', rurl)
+    repo.remotes.origin.rename('origin')
+    remote.fetch()
+    repo.git.checkout(
+        "origin/{branch}".format(
+            branch=ic_branch_base),
+        b=ic_branch_base)
+    return repo
 
 def main():
     parser = argparse.ArgumentParser(
@@ -7,14 +36,22 @@ def main():
         '--desc-repo',
         dest='desc_repo',
         action='store',
-        help='github repo describing ic branch',
+        help='github repo describing ic branch user/repo',
+        type=github_addr,
         required=True)
     parser.add_argument(
         '--target-repo',
         dest='target_repo',
         action='store',
-        help='github repo for which we are constructing an ic branch',
+        help='github repo for which we are constructing an ic branch user/repo',
+        type=github_addr,
         required=True)
+    parser.add_argument(
+        '--integration-base',
+        dest='integration_base',
+        action='store',
+        help='integration branch name base',
+        default='master')
     parser.add_argument(
         '--branch-name-base',
         dest='branch_name_base',
@@ -27,4 +64,11 @@ def main():
         action='store',
         help='location of working dir, must be empty',
         required=True)
+    args = parser.parse_args()
+    ic_branch = get_ic_branch_name(args.branch_name_base)
+    target_repo = init_repo(
+        args.working_dir,
+        args.target_repo,
+        ic_branch,
+        args.integration_base)
     return 0
