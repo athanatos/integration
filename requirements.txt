@@ -1,0 +1,6 @@
+PyYAML
+argparse >= 1.2.1
+
+# Test Dependencies
+nose >=1.0.0
+fudge >=1.0.3
