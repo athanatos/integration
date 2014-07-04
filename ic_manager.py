@@ -17,17 +17,31 @@ def get_ic_branch_name(base):
 
 def init_repo(tdir, rurl, ic_branch_name, ic_branch_base):
     tgitpath = path.join(tdir, "target.git")
-    print tgitpath
-    mkdir(tgitpath)
-    repo = git.Repo.init(tgitpath)
-    remote = repo.create_remote('origin', rurl)
-    repo.remotes.origin.rename('origin')
-    remote.fetch()
-    repo.git.checkout(
+    repo = None
+    try:
+        repo = pygit2.Repository(
+            tgitpath)
+        if repo is None:
+            raise ""
+        print repo.remotes
+        remote = repo.create_remote('origin', rurl)
+        remote.fetch()
+    except Exception, e:
+        print e
+        mkdir(tgitpath)
+        repo = pygit2.clone_repository(
+            rurl,
+            tgitpath,
+            remote_name='origin',
+            checkout_branch=ic_branch_base,
+            bare=False)
+
+    branch = repo.lookup_branch(
         "origin/{branch}".format(
-            branch=ic_branch_base),
-        b=ic_branch_base)
-    return repo
+            branch=ic_branch_base))
+    ic_branch = repo.create_branch(ic_branch_name, branch.resolve().target)
+    repo.reset(ic_branch.resolve().target, pygit2.GIT_RESET_HARD)
+    return repo, ic_branch
 
 def main():
     parser = argparse.ArgumentParser(
