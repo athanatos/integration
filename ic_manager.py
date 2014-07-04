@@ -1,6 +1,6 @@
 import argparse
 from os import path, mkdir
-import git
+import pygit2
 
 def github_addr(candidate):
     parts = candidate.split('/')
