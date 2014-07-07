@@ -6,7 +6,7 @@ setup(
     packages=find_packages(),
     author='Samuel Just',
     description='Integration branch manager',
-    lisence='MIT',
+    license='MIT',
     keywords='testing git',
     entry_points={
         'console_scripts': [

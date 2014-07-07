@@ -1,7 +1,7 @@
 #!/bin/sh
 set -e
 
-for package in python-dev python-pip python-virtualenv; do
+for package in python-dev python-pip python-virtualenv libffi-dev; do
     if [ "$(dpkg --status -- $package|sed -n 's/^Status: //p')" != "install ok installed" ]; then
 	# add a space after old values
 	missing="${missing:+$missing }$package"
@@ -25,10 +25,21 @@ if [ -z "$NO_CLOBBER" ] || [ ! -e ./virtualenv ]; then
     ./virtualenv/bin/pip install setuptools --no-use-wheel --upgrade
 fi
 
-./virtualenv/bin/pip install -r requirements.txt
+export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/home/samuelj/integration/virtualenv/include"
+export LIBGIT2="/home/samuelj/integration/virtualenv"
+export LDFLAGS="-Wl,-rpath='$LIBGIT2/lib',--enable-new-dtags $LDFLAGS"
 
-export LIBGIT2="./libgit2"
-export LDFLAGS="-Wl,-rpath='$LIBGIT2/build',--enable-new-dtags $LDFLAGS"
+mkdir virtualenv || true
+cd libgit2
+mkdir build || true
+cd build
+cmake ..
+cmake --build .
+cmake .. -DCMAKE_INSTALL_PREFIX=../../virtualenv
+cmake --build . --target install
+cd ../..
+
+./virtualenv/bin/pip install -r requirements.txt
 
 # forbid setuptools from using the network because it'll try to use
 # easy_install, and we really wanted pip; next line will fail if pip

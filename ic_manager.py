@@ -22,7 +22,7 @@ def init_repo(tdir, rurl, ic_branch_name, ic_branch_base):
         repo = pygit2.Repository(
             tgitpath)
         if repo is None:
-            raise "asdfasdf"
+            raise "No Repo"
         origins = filter(
             lambda (x, _): x == 'origin',
             [(i.name, i) for i in repo.remotes])
@@ -36,7 +36,10 @@ def init_repo(tdir, rurl, ic_branch_name, ic_branch_base):
         remote.fetch()
     except Exception, e:
         print e
-        mkdir(tgitpath)
+        try:
+            mkdir(tgitpath)
+        except:
+            pass
         repo = pygit2.clone_repository(
             rurl,
             tgitpath,
@@ -59,7 +62,8 @@ def init_repo(tdir, rurl, ic_branch_name, ic_branch_base):
     else:
         ic_branch = repo.create_branch(ic_branch_name, base_ref)
 
-    repo.reset(ic_branch.resolve().target, pygit2.GIT_RESET_HARD)
+    repo.checkout_tree(ic_branch.get_object(), 2)
+    repo.reset(ic_branch.target, pygit2.GIT_RESET_HARD)
     return repo, ic_branch
 
 def main():
