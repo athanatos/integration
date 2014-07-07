@@ -1,7 +1,7 @@
 PyYAML
 argparse >= 1.2.1
 PyGithub
-pygit2 == 0.19.1
+pygit2
 
 # Test Dependencies
 nose >=1.0.0
