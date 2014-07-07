@@ -22,9 +22,17 @@ def init_repo(tdir, rurl, ic_branch_name, ic_branch_base):
         repo = pygit2.Repository(
             tgitpath)
         if repo is None:
-            raise ""
-        print repo.remotes
-        remote = repo.create_remote('origin', rurl)
+            raise "asdfasdf"
+        origins = filter(
+            lambda (x, _): x == 'origin',
+            [(i.name, i) for i in repo.remotes])
+        if len(origins) == 0:
+            remote = repo.create_remote('origin', rurl)
+            remote.fetch()
+        else:
+            (_, remote) = origins[0]
+        remote.url = rurl
+        remote.save()
         remote.fetch()
     except Exception, e:
         print e
@@ -36,10 +44,21 @@ def init_repo(tdir, rurl, ic_branch_name, ic_branch_base):
             checkout_branch=ic_branch_base,
             bare=False)
 
-    branch = repo.lookup_branch(
+    base_branch = repo.lookup_branch(
         "origin/{branch}".format(
-            branch=ic_branch_base))
-    ic_branch = repo.create_branch(ic_branch_name, branch.resolve().target)
+            branch=ic_branch_base),
+        pygit2.GIT_BRANCH_REMOTE)
+    if base_branch is None:
+        raise "Error: {base} does not exist on remote".format(base=ic_branch_base)
+    base_ref = base_branch.resolve().get_object()
+
+    ic_branch = repo.lookup_branch(
+        ic_branch_name)
+    if ic_branch is not None:
+        ic_branch.target = base_branch.resolve().target
+    else:
+        ic_branch = repo.create_branch(ic_branch_name, base_ref)
+
     repo.reset(ic_branch.resolve().target, pygit2.GIT_RESET_HARD)
     return repo, ic_branch
 
