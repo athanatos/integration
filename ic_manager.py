@@ -17,25 +17,13 @@ def get_ic_branch_name(base):
 
 def init_repo(tdir, rurl, ic_branch_name, ic_branch_base):
     tgitpath = path.join(tdir, "target.git")
-    repo = None
+
     try:
         repo = pygit2.Repository(
             tgitpath)
-        if repo is None:
-            raise "No Repo"
-        origins = filter(
-            lambda (x, _): x == 'origin',
-            [(i.name, i) for i in repo.remotes])
-        if len(origins) == 0:
-            remote = repo.create_remote('origin', rurl)
-            remote.fetch()
-        else:
-            (_, remote) = origins[0]
-        remote.url = rurl
-        remote.save()
-        remote.fetch()
-    except Exception, e:
-        print e
+    except:
+        repo = None
+    if repo is None:
         try:
             mkdir(tgitpath)
         except:
@@ -47,12 +35,25 @@ def init_repo(tdir, rurl, ic_branch_name, ic_branch_base):
             checkout_branch=ic_branch_base,
             bare=False)
 
+    origins = filter(
+        lambda (x, _): x == 'origin',
+        [(i.name, i) for i in repo.remotes])
+    if len(origins) == 0:
+        remote = repo.create_remote('origin', rurl)
+        remote.fetch()
+    else:
+        (_, remote) = origins[0]
+    remote.url = rurl
+    remote.save()
+    remote.fetch()
+
     base_branch = repo.lookup_branch(
         "origin/{branch}".format(
             branch=ic_branch_base),
         pygit2.GIT_BRANCH_REMOTE)
     if base_branch is None:
-        raise "Error: {base} does not exist on remote".format(base=ic_branch_base)
+        raise Exception(
+            "Error: {base} does not exist on remote".format(base=ic_branch_base))
     base_ref = base_branch.resolve().get_object()
 
     ic_branch = repo.lookup_branch(
@@ -62,7 +63,7 @@ def init_repo(tdir, rurl, ic_branch_name, ic_branch_base):
     else:
         ic_branch = repo.create_branch(ic_branch_name, base_ref)
 
-    repo.checkout_tree(ic_branch.get_object(), 2)
+    repo.checkout(ic_branch.name)
     repo.reset(ic_branch.target, pygit2.GIT_RESET_HARD)
     return repo, ic_branch
 
