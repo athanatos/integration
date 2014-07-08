@@ -71,6 +71,8 @@ def try_merge(repo, ic_branch, remote, branch, logger=l):
     rname = "{user}-{repo}".format(user=user, repo=reponame)
     rhandle = get_or_create_remote(repo, rname, format_github_addr(remote))
     rhandle.fetch()
+    previous_head_commit = repo.head.resolve().target
+    repo.reset(previous_head_commit, pygit2.GIT_RESET_HARD)
 
 def init_repo(tdir, rurl, ic_branch_name, ic_branch_base, dir_name):
     tgitpath = os.path.join(tdir, dir_name)
