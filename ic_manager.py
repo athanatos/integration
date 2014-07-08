@@ -1,5 +1,6 @@
 import argparse
 from os import path, mkdir
+import sys
 import pygit2
 
 def github_addr(candidate):
@@ -52,8 +53,9 @@ def init_repo(tdir, rurl, ic_branch_name, ic_branch_base):
             branch=ic_branch_base),
         pygit2.GIT_BRANCH_REMOTE)
     if base_branch is None:
-        raise Exception(
-            "Error: {base} does not exist on remote".format(base=ic_branch_base))
+        print "Error: {base} does not exist on remote".format(
+            base=ic_branch_base)
+        sys.exit(1)
     base_ref = base_branch.resolve().get_object()
 
     ic_branch = repo.lookup_branch(
