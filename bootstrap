@@ -1,7 +1,7 @@
 #!/bin/sh
 set -e
 
-for package in python-dev python-pip python-virtualenv libffi-dev; do
+for package in python-dev python-pip python-virtualenv libffi-dev cmake; do
     if [ "$(dpkg --status -- $package|sed -n 's/^Status: //p')" != "install ok installed" ]; then
 	# add a space after old values
 	missing="${missing:+$missing }$package"
@@ -24,6 +24,10 @@ if [ -z "$NO_CLOBBER" ] || [ ! -e ./virtualenv ]; then
     # work-around change in pip 1.5
     ./virtualenv/bin/pip install setuptools --no-use-wheel --upgrade
 fi
+
+git submodule sync 
+git submodule init
+git submodule update
 
 export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/home/samuelj/integration/virtualenv/include"
 export LIBGIT2="/home/samuelj/integration/virtualenv"
