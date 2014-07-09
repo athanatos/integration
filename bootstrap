@@ -29,8 +29,8 @@ git submodule sync
 git submodule init
 git submodule update
 
-export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/home/samuelj/integration/virtualenv/include"
-export LIBGIT2="/home/samuelj/integration/virtualenv"
+export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/home/sam/git-checkouts/integration/virtualenv/include"
+export LIBGIT2="/home/sam/git-checkouts/virtualenv"
 export LDFLAGS="-Wl,-rpath='$LIBGIT2/lib',--enable-new-dtags $LDFLAGS"
 
 mkdir virtualenv || true
