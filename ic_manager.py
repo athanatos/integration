@@ -72,7 +72,18 @@ def try_merge(repo, ic_branch, remote, branch, logger=l):
     rhandle = get_or_create_remote(repo, rname, format_github_addr(remote))
     rhandle.fetch()
     previous_head_commit = repo.head.resolve().target
-    repo.reset(previous_head_commit, pygit2.GIT_RESET_HARD)
+    remote_branch = repo.lookup_branch(
+        "{rname}/{branch}".format(
+            rname=rname,
+            branch=branch),
+        pygit2.GIT_BRANCH_REMOTE)
+    if remote_branch is None:
+        l("Could not find remote branch {branch} on repo {repo}".format(
+                branch=branch,
+                repo=rname))
+        return
+    repo.merge(remote_branch.target)
+    #repo.reset(previous_head_commit, pygit2.GIT_RESET_HARD)
 
 def init_repo(tdir, rurl, ic_branch_name, ic_branch_base, dir_name):
     tgitpath = os.path.join(tdir, dir_name)
