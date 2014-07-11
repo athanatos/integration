@@ -5,6 +5,19 @@ import pygit2
 from os import listdir
 from os.path import isfile, join
 
+def pp(status):
+    statuses = [('INDEX_NEW', pygit2.GIT_STATUS_INDEX_NEW),
+                ('INDEX_MODIFIED', pygit2.GIT_STATUS_INDEX_MODIFIED),
+                ('INDEX_DELETED', pygit2.GIT_STATUS_INDEX_DELETED),
+                ('WT_NEW', pygit2.GIT_STATUS_WT_NEW),
+                ('WT_MODIFIED', pygit2.GIT_STATUS_WT_MODIFIED),
+                ('WT_DELETED', pygit2.GIT_STATUS_WT_DELETED)]
+    to_join = [string for (string, val) in statuses if val & status != 0]
+    return '|'.join(to_join)
+
+def pps(statuses):
+    return {f: pp(stat) for (f, stat) in statuses.iteritems()}
+
 def parse_github_addr(candidate):
     parts = candidate.split('/')
     if len(parts) is not 2:
@@ -44,6 +57,8 @@ def get_branches(path):
     ret = []
     with open(path) as f:
         for line in f.readlines():
+            if len(line) > 1 and line[0] == '#':
+                continue
             items = line.split()
             if len(items) < 2:
                 continue
@@ -83,6 +98,8 @@ def try_merge(repo, ic_branch, remote, branch, logger=l):
                 repo=rname))
         return
     repo.merge(remote_branch.target)
+    for k, v in pps(repo.status()).iteritems():
+        print k, v
     #repo.reset(previous_head_commit, pygit2.GIT_RESET_HARD)
 
 def init_repo(tdir, rurl, ic_branch_name, ic_branch_base, dir_name):
@@ -125,7 +142,7 @@ def init_repo(tdir, rurl, ic_branch_name, ic_branch_base, dir_name):
     else:
         ic_branch = repo.create_branch(ic_branch_name, base_ref)
 
-    repo.checkout(ic_branch.name)
+    #repo.checkout(ic_branch.name)
     repo.reset(ic_branch.target, pygit2.GIT_RESET_HARD)
     return repo, ic_branch, tgitpath
 
